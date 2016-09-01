@@ -8,7 +8,7 @@ QT       += core gui bluetooth
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = BT_control
+TARGET = BT_serial
 TEMPLATE = app
 
 
