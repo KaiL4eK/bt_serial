@@ -32,7 +32,7 @@ ControlWindow::ControlWindow(QWidget *parent)
     QWidget *window = new QWidget();
     window->setLayout(mainLayout);
     setCentralWidget(window);
-    setWindowTitle(tr("Bluetooth Control"));
+    setWindowTitle(tr("Bluetooth Serial"));
 
     connect(connectBtn, &QPushButton::clicked,
             this, &ControlWindow::on_connectBtnClicked);
