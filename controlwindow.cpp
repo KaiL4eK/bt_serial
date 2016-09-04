@@ -104,7 +104,7 @@ void ControlWindow::btSocketReadyRead()
 {
     outputBuffer.append(btSocket->readAll());
     if ( outputBuffer.endsWith("\n") ) {
-        BTOutputTextEdit->append(outputBuffer.left(outputBuffer.length()));
+        BTOutputTextEdit->append(outputBuffer.trimmed());
         outputBuffer.clear();
     }
 }
