@@ -74,8 +74,10 @@ bool ControlWindow::chooseConnectionDevice()
 
         connect(btSocket, &QBluetoothSocket::readyRead,
                 this, &ControlWindow::btSocketReadyRead);
+
+        return( true );
     }
-    return( true );
+    return( false );
 }
 
 void ControlWindow::btSocketDisconnected()

@@ -19,7 +19,6 @@ DeviceBTSelect::DeviceBTSelect(QWidget *parent)
     mainLayout->addWidget(devicesList, 0, 0);
 
     setLayout(mainLayout);
-
 }
 
 DeviceBTSelect::~DeviceBTSelect()
@@ -47,18 +46,21 @@ void DeviceBTSelect::addDevice(const QBluetoothDeviceInfo &info)
     if (items.empty()) {
         QListWidgetItem *item = new QListWidgetItem(label);
         QBluetoothLocalDevice::Pairing pairingStatus = localDevice->pairingStatus(info.address());
-        if (pairingStatus == QBluetoothLocalDevice::Paired || pairingStatus == QBluetoothLocalDevice::AuthorizedPaired )
+        if (pairingStatus == QBluetoothLocalDevice::Paired || pairingStatus == QBluetoothLocalDevice::AuthorizedPaired ) {
             item->setTextColor(QColor(Qt::green));
-        else
+            m_discoveredDevices.insert(item, info);
+        } else
             item->setTextColor(QColor(Qt::black));
 
         devicesList->addItem(item);
-        m_discoveredDevices.insert(item, info);
     }
 }
 
 void DeviceBTSelect::itemActivated(QListWidgetItem *item)
 {
+    if ( item->textColor() == QColor(Qt::black) )
+        return;
+
     m_deviceInfo = m_discoveredDevices.value(item);
     if ( m_discoveryAgent->isActive() )
         m_discoveryAgent->stop();
@@ -68,6 +70,9 @@ void DeviceBTSelect::itemActivated(QListWidgetItem *item)
 
 void DeviceBTSelect::closeEvent(QCloseEvent *event)
 {
+    if ( m_discoveryAgent->isActive() )
+        m_discoveryAgent->stop();
+
     reject();
     QWidget::closeEvent(event);
 }
