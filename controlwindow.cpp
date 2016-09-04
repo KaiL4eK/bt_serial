@@ -19,23 +19,19 @@ ControlWindow::ControlWindow(QWidget *parent)
     BTOutputTextEdit = new QTextEdit();
     BTOutputTextEdit->setReadOnly(true);
 
-    connectBtn = new QPushButton();
-    connectBtn->setText("Connect");
-
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->addWidget(nameLineEdit, 0, 0);
     mainLayout->addWidget(connectStatusLineEdit, 0, 1);
     mainLayout->addWidget(bt_label, 1, 0, 1, 2);
     mainLayout->addWidget(BTOutputTextEdit, 2, 0, 1, 2);
-    mainLayout->addWidget(connectBtn, 3, 0, 1, 2);
 
     QWidget *window = new QWidget();
     window->setLayout(mainLayout);
     setCentralWidget(window);
     setWindowTitle(tr("Bluetooth Serial"));
 
-    connect(connectBtn, &QPushButton::clicked,
-            this, &ControlWindow::on_connectBtnClicked);
+    if ( !chooseConnectionDevice() )
+        exit( 0 );
 }
 
 ControlWindow::~ControlWindow()
@@ -44,15 +40,15 @@ ControlWindow::~ControlWindow()
     delete btSocket;
 }
 
-void ControlWindow::on_connectBtnClicked(bool)
+bool ControlWindow::chooseConnectionDevice()
 {    
     if (QBluetoothLocalDevice().hostMode() == QBluetoothLocalDevice::HostPoweredOff) {
-        QMessageBox::information(this, "Bluetooth power", "Check Bluetooth is powered on");
-        return;
+        QMessageBox::information(this, "Bluetooth power", "Check Bluetooth is powered on. Exit");
+        return( false );
     }
+
     connectStatusLineEdit->clear();
-    connectBtn->setEnabled(false);
-//    QString serviceUuid(QStringLiteral("00001101-0000-1000-8000-00805F9B34FB"));
+
     DeviceBTSelect deviceSelect;
     deviceSelect.startScan();
     if ( deviceSelect.exec() == QDialog::Accepted ) {
@@ -60,11 +56,11 @@ void ControlWindow::on_connectBtnClicked(bool)
         nameLineEdit->setText(deviceInfo.name());
 
         btSocket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
-        qDebug() << "Create socket";
+        qDebug() << "Socket created";
         btSocket->connectToService(deviceInfo.address(),
                                    deviceInfo.deviceUuid());
-                                   //QBluetoothUuid(serviceUuid));
-        qDebug() << "ConnectToService done";
+
+        qDebug() << "connectToService done";
         connectStatusLineEdit->setText("Wait for connect");
 
         connect(btSocket, &QBluetoothSocket::connected,
@@ -79,25 +75,19 @@ void ControlWindow::on_connectBtnClicked(bool)
         connect(btSocket, &QBluetoothSocket::readyRead,
                 this, &ControlWindow::btSocketReadyRead);
     }
-
-    connectBtn->setEnabled(true);
+    return( true );
 }
 
 void ControlWindow::btSocketDisconnected()
 {
     connectStatusLineEdit->setText("Disconnected from" + btSocket->peerName());
-    delete senderTimer;
+    delete btSocket;
+    exit( 0 );
 }
 
 void ControlWindow::btSocketConnected()
 {
     connectStatusLineEdit->setText("Connected to " + btSocket->peerName());
-
-//    senderTimer = new QTimer();
-//    senderTimer->setInterval(100);
-//    connect(senderTimer, &QTimer::timeout,
-//            this, &ControlWindow::btSendCommand);
-//    senderTimer->start(100);
 }
 
 void ControlWindow::btSocketError(QBluetoothSocket::SocketError error)
@@ -105,6 +95,7 @@ void ControlWindow::btSocketError(QBluetoothSocket::SocketError error)
     connectStatusLineEdit->setText("Error: " + QString::number(error));
     qDebug() << connectStatusLineEdit->text();
     delete btSocket;
+    exit( 0 );
 }
 
 void ControlWindow::btSocketReadyRead()

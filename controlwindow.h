@@ -22,7 +22,7 @@ public:
     explicit ControlWindow(QWidget *parent = 0);
     ~ControlWindow();
 private slots:
-    void on_connectBtnClicked(bool);
+
     void btSocketConnected();
     void btSocketError(QBluetoothSocket::SocketError);
     void btSocketDisconnected();
@@ -32,15 +32,14 @@ private:
     QLineEdit           *nameLineEdit;
     QLineEdit           *connectStatusLineEdit;
     QTextEdit           *BTOutputTextEdit;
-    QPushButton         *connectBtn;
     QBluetoothSocket    *btSocket;
     QString             outputBuffer;
-    QTimer              *senderTimer;
 
     char                keyInput;
     int                 defaultSendCommand = 1;
     bool                connected;
 
+    bool chooseConnectionDevice();
     void keyPressEvent(QKeyEvent *event);
 };
 
